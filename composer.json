@@ -1,5 +1,5 @@
 {
-    "name": "monkeyscloud/monkeyslegion-log",
+    "name": "monkeyscloud/monkeyslegion-logger",
     "description": "Advanced logger for the MonkeysLegion PHP framework.",
     "type": "library",
     "license": "MIT",
