@@ -1,27 +1,39 @@
 {
-    "name": "monkeyscloud/monkeyslegion-logger",
-    "description": "Advanced logger for the MonkeysLegion PHP framework.",
-    "type": "library",
-    "license": "MIT",
-    "require": {
-        "php": "^8.4",
-        "psr/log": "^3.0",
-        "monolog/monolog": "^3.9"
-    },
-    "require-dev": {
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^13.0@dev"
-    },
-    "autoload": {
-        "psr-4": {
-            "Monkeyslegion\\Log\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Amanar Marouane",
-            "email": "marouane.amanar07@gmail.com"
-        }
-    ],
-    "minimum-stability": "dev"
+  "name": "monkeyscloud/monkeyslegion-logger",
+  "description": "Advanced logger for the MonkeysLegion PHP framework.",
+  "type": "library",
+  "license": "MIT",
+
+  "require": {
+    "php": "^8.4",
+    "psr/log": "^3.0",
+    "monolog/monolog": "^3.9"
+  },
+
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^13.0@dev"
+  },
+
+  "autoload": {
+    "psr-4": {
+      "MonkeysLegion\\Logger\\": "src/"
+    }
+  },
+
+  "autoload-dev": {
+    "psr-4": {
+      "MonkeysLegion\\Logger\\Tests\\": "tests/"
+    }
+  },
+
+  "authors": [
+    {
+      "name": "Amanar Marouane",
+      "email": "marouane.amanar07@gmail.com"
+    }
+  ],
+
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
