@@ -1,15 +1,15 @@
 <?php
 
-namespace MonkeysLegion\Log\Factory;
+namespace MonkeysLegion\Logger\Factory;
 
 use InvalidArgumentException;
-use MonkeysLegion\Log\Contracts\MonkeysLoggerInterface;
-use MonkeysLegion\Log\Logger\ConsoleLogger;
-use MonkeysLegion\Log\Logger\FileLogger;
-use MonkeysLegion\Log\Logger\NativeLogger;
-use MonkeysLegion\Log\Logger\NullLogger;
-use MonkeysLegion\Log\Logger\StackLogger;
-use MonkeysLegion\Log\Logger\SyslogLogger;
+use MonkeysLegion\Logger\Contracts\MonkeysLoggerInterface;
+use MonkeysLegion\Logger\Logger\ConsoleLogger;
+use MonkeysLegion\Logger\Logger\FileLogger;
+use MonkeysLegion\Logger\Logger\NativeLogger;
+use MonkeysLegion\Logger\Logger\NullLogger;
+use MonkeysLegion\Logger\Logger\StackLogger;
+use MonkeysLegion\Logger\Logger\SyslogLogger;
 
 class LoggerFactory
 {

@@ -1,10 +1,10 @@
 <?php
 
-namespace MonkeysLegion\Log\Logger;
+namespace MonkeysLegion\Logger\Logger;
 
 use InvalidArgumentException;
-use MonkeysLegion\Log\Contracts\MonkeysLoggerInterface;
-use MonkeysLegion\Log\Factory\LoggerFactory;
+use MonkeysLegion\Logger\Contracts\MonkeysLoggerInterface;
+use MonkeysLegion\Logger\Factory\LoggerFactory;
 use Stringable;
 
 class StackLogger implements MonkeysLoggerInterface
@@ -72,7 +72,7 @@ class StackLogger implements MonkeysLoggerInterface
                 if ($logger !== null && !($logger instanceof self)) {
                     $loggers[] = $logger;
                     $resolved[$channelName] = true;
-                } 
+                }
                 if ($logger instanceof self) {
                     throw new InvalidArgumentException("Circular dependency detected for logger channel '{$channelName}'.");
                 }

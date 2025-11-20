@@ -1,8 +1,8 @@
 <?php
 
-namespace MonkeysLegion\Log\Tests\Unit;
+namespace MonkeysLegion\Logger\Tests\Unit;
 
-use MonkeysLegion\Log\Logger\NullLogger;
+use MonkeysLegion\Logger\Logger\NullLogger;
 use PHPUnit\Framework\TestCase;
 
 class NullLoggerTest extends TestCase

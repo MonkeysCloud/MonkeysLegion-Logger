@@ -1,8 +1,8 @@
 <?php
 
-namespace MonkeysLegion\Log\Tests\Unit;
+namespace MonkeysLegion\Logger\Tests\Unit;
 
-use MonkeysLegion\Log\Logger\ConsoleLogger;
+use MonkeysLegion\Logger\Logger\ConsoleLogger;
 use PHPUnit\Framework\TestCase;
 
 class ConsoleLoggerTest extends TestCase

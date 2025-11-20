@@ -1,13 +1,13 @@
 <?php
 
-namespace MonkeysLegion\Log\Tests\Unit;
+namespace MonkeysLegion\Logger\Tests\Unit;
 
 use InvalidArgumentException;
-use MonkeysLegion\Log\Factory\LoggerFactory;
-use MonkeysLegion\Log\Logger\ConsoleLogger;
-use MonkeysLegion\Log\Logger\FileLogger;
-use MonkeysLegion\Log\Logger\NullLogger;
-use MonkeysLegion\Log\Logger\StackLogger;
+use MonkeysLegion\Logger\Factory\LoggerFactory;
+use MonkeysLegion\Logger\Logger\ConsoleLogger;
+use MonkeysLegion\Logger\Logger\FileLogger;
+use MonkeysLegion\Logger\Logger\NullLogger;
+use MonkeysLegion\Logger\Logger\StackLogger;
 use PHPUnit\Framework\TestCase;
 
 class LoggerFactoryTest extends TestCase

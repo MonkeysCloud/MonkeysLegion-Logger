@@ -1,8 +1,8 @@
 <?php
 
-namespace MonkeysLegion\Log\Abstracts;
+namespace MonkeysLegion\Logger\Abstracts;
 
-use MonkeysLegion\Log\Contracts\MonkeysLoggerInterface;
+use MonkeysLegion\Logger\Contracts\MonkeysLoggerInterface;
 use Psr\Log\LogLevel;
 
 abstract class AbstractLogger implements MonkeysLoggerInterface

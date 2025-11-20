@@ -1,8 +1,8 @@
 <?php
 
-namespace MonkeysLegion\Log\Tests\Unit;
+namespace MonkeysLegion\Logger\Tests\Unit;
 
-use MonkeysLegion\Log\Logger\FileLogger;
+use MonkeysLegion\Logger\Logger\FileLogger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 

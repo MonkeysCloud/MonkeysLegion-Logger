@@ -1,6 +1,6 @@
 <?php
 
-namespace MonkeysLegion\Log\Contracts;
+namespace MonkeysLegion\Logger\Contracts;
 
 use Psr\Log\LoggerInterface;
 use Stringable;

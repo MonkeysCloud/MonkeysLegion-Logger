@@ -28,7 +28,7 @@ composer require monkeyscloud/monkeyslegion-logger
 ## Quick Start
 
 ```php
-use MonkeysLegion\Log\Factory\LoggerFactory;
+use MonkeysLegion\Logger\Factory\LoggerFactory;
 
 // Load configuration
 $config = require 'config/logging.php';
@@ -210,7 +210,7 @@ Combines multiple loggers to write to multiple destinations.
 ### Basic Logging
 
 ```php
-use MonkeysLegion\Log\Factory\LoggerFactory;
+use MonkeysLegion\Logger\Factory\LoggerFactory;
 
 $factory = new LoggerFactory($config);
 $logger = $factory->make('daily');

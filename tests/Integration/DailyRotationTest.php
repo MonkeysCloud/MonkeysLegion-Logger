@@ -1,8 +1,8 @@
 <?php
 
-namespace MonkeysLegion\Log\Tests\Integration;
+namespace MonkeysLegion\Logger\Tests\Integration;
 
-use MonkeysLegion\Log\Factory\LoggerFactory;
+use MonkeysLegion\Logger\Factory\LoggerFactory;
 use PHPUnit\Framework\TestCase;
 
 class DailyRotationTest extends TestCase

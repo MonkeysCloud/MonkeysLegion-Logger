@@ -1,8 +1,8 @@
 <?php
 
-namespace MonkeysLegion\Log\Logger;
+namespace MonkeysLegion\Logger\Logger;
 
-use MonkeysLegion\Log\Abstracts\AbstractLogger;
+use MonkeysLegion\Logger\Abstracts\AbstractLogger;
 use Stringable;
 
 class NullLogger extends AbstractLogger

@@ -1,10 +1,10 @@
 <?php
 
-namespace MonkeysLegion\Log\Tests\Unit;
+namespace MonkeysLegion\Logger\Tests\Unit;
 
 use InvalidArgumentException;
-use MonkeysLegion\Log\Factory\LoggerFactory;
-use MonkeysLegion\Log\Logger\StackLogger;
+use MonkeysLegion\Logger\Factory\LoggerFactory;
+use MonkeysLegion\Logger\Logger\StackLogger;
 use PHPUnit\Framework\TestCase;
 
 class StackLoggerTest extends TestCase
