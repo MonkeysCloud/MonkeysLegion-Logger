@@ -166,11 +166,14 @@ class LoggerFactoryTest extends TestCase
 
     public function testDatePlaceholderReplacement(): void
     {
+        $testDir = sys_get_temp_dir() . '/daily_test_' . uniqid();
+
         $config = [
             'channels' => [
                 'daily' => [
                     'driver' => 'file',
-                    'path' => sys_get_temp_dir() . '/app-{date}.log',
+                    'path' => $testDir . '/app.log',
+                    'daily' => true,
                     'date_format' => 'Y-m-d',
                 ],
             ],
@@ -180,31 +183,129 @@ class LoggerFactoryTest extends TestCase
         $logger = $factory->make('daily');
 
         $this->assertInstanceOf(FileLogger::class, $logger);
+
+        // Log something to create the file
+        $logger->info('Test message');
+
+        // Check that the file was created with date in filename
+        $expectedDate = date('Y-m-d');
+        $expectedFile = $testDir . '/app-' . $expectedDate . '.log';
+
+        $this->assertFileExists($expectedFile);
+
+        // Cleanup
+        if (file_exists($expectedFile)) {
+            unlink($expectedFile);
+        }
+        if (is_dir($testDir)) {
+            rmdir($testDir);
+        }
     }
 
-    public function testCreatesDirectoryIfNotExists(): void
+    public function testDailyLoggerWithDifferentDateFormat(): void
     {
-        $testDir = sys_get_temp_dir() . '/log_test_' . uniqid();
-        $testPath = $testDir . '/app.log';
+        $testDir = sys_get_temp_dir() . '/daily_format_test_' . uniqid();
 
         $config = [
             'channels' => [
-                'file' => [
+                'daily' => [
                     'driver' => 'file',
-                    'path' => $testPath,
+                    'path' => $testDir . '/app.log',
+                    'daily' => true,
+                    'date_format' => 'Ymd',
                 ],
             ],
         ];
 
         $factory = new LoggerFactory($config);
-        $logger = $factory->make('file');
+        $logger = $factory->make('daily');
 
-        $this->assertDirectoryExists($testDir);
+        $logger->info('Test message');
+
+        $expectedDate = date('Ymd');
+        $expectedFile = $testDir . '/app-' . $expectedDate . '.log';
+
+        $this->assertFileExists($expectedFile);
+
+        // Cleanup
+        if (file_exists($expectedFile)) {
+            unlink($expectedFile);
+        }
+        if (is_dir($testDir)) {
+            rmdir($testDir);
+        }
+    }
+
+    public function testRegularFileLoggerDoesNotAddDate(): void
+    {
+        $testDir = sys_get_temp_dir() . '/regular_test_' . uniqid();
+        $testPath = $testDir . '/app.log';
+
+        $config = [
+            'channels' => [
+                'single' => [
+                    'driver' => 'file',
+                    'path' => $testPath,
+                    'daily' => false,
+                ],
+            ],
+        ];
+
+        $factory = new LoggerFactory($config);
+        $logger = $factory->make('single');
+
+        $logger->info('Test message');
+
+        // File should exist at exact path without date
+        $this->assertFileExists($testPath);
+
+        // File with date should NOT exist
+        $dateFile = $testDir . '/app-' . date('Y-m-d') . '.log';
+        $this->assertFileDoesNotExist($dateFile);
 
         // Cleanup
         if (file_exists($testPath)) {
             unlink($testPath);
         }
+        if (is_dir($testDir)) {
+            rmdir($testDir);
+        }
+    }
+
+    public function testDailyLoggerWithDifferentExtensions(): void
+    {
+        $testDir = sys_get_temp_dir() . '/ext_test_' . uniqid();
+
+        $testCases = [
+            'errors.log' => 'errors-' . date('Y-m-d') . '.log',
+            'debug.txt' => 'debug-' . date('Y-m-d') . '.txt',
+            'app' => 'app-' . date('Y-m-d'),
+        ];
+
+        foreach ($testCases as $inputPath => $expectedFilename) {
+            $config = [
+                'channels' => [
+                    'daily' => [
+                        'driver' => 'file',
+                        'path' => $testDir . '/' . $inputPath,
+                        'daily' => true,
+                    ],
+                ],
+            ];
+
+            $factory = new LoggerFactory($config);
+            $logger = $factory->make('daily');
+            $logger->info('Test');
+
+            $expectedFile = $testDir . '/' . $expectedFilename;
+            $this->assertFileExists($expectedFile, "Failed for input: {$inputPath}");
+
+            // Cleanup
+            if (file_exists($expectedFile)) {
+                unlink($expectedFile);
+            }
+        }
+
         if (is_dir($testDir)) {
             rmdir($testDir);
         }

@@ -37,7 +37,6 @@ class LoggerFactory
     {
         $defaultChannel = $this->config['default'] ?? 'stack';
         $channel = $channel ?? (is_string($defaultChannel) ? $defaultChannel : 'stack');
-        echo "Making logger for channel: {$channel}\n";
         // Detect circular dependencies
         if (isset($this->resolving[$channel])) {
             throw new InvalidArgumentException("Circular dependency detected for logger channel '{$channel}'.");
@@ -90,7 +89,6 @@ class LoggerFactory
 
         // Check for circular dependencies in stack channels
         foreach ($channels as $channelName) {
-            echo "Checking channel: {$channelName}\n";
             if (isset($this->resolving[$channelName])) {
                 throw new InvalidArgumentException("Circular dependency detected for logger channel '{$channelName}'.");
             }
@@ -109,11 +107,21 @@ class LoggerFactory
         $pathValue = $config['path'] ?? 'logs/app.log';
         $path = is_string($pathValue) ? $pathValue : 'logs/app.log';
 
-        // Handle date placeholders in path
-        if (str_contains($path, '{date}')) {
-            $dateFormatValue = $config['date_format'] ?? 'Y-m-d';
-            $dateFormat = is_string($dateFormatValue) ? $dateFormatValue : 'Y-m-d';
-            $path = str_replace('{date}', date($dateFormat), $path);
+        // Check if this is a daily driver - add date to filename automatically
+        $isDaily = isset($config['daily']) && $config['daily'] === true;
+
+        if ($isDaily) {
+            $dateFormat = $this->getStringConfig($config, 'date_format', 'Y-m-d');
+            $dateStr = date($dateFormat);
+
+            // Insert date before file extension
+            // logs/app.log -> logs/app-2024-01-15.log
+            $pathInfo = pathinfo($path);
+            $directory = $pathInfo['dirname'] ?? '.';
+            $filename = $pathInfo['filename'];
+            $extension = isset($pathInfo['extension']) ? '.' . $pathInfo['extension'] : '';
+
+            $path = $directory . '/' . $filename . '-' . $dateStr . $extension;
         }
 
         // Ensure directory exists

@@ -27,11 +27,19 @@ class RealWorldScenarioTest extends TestCase
             'channels' => [
                 'stack' => [
                     'driver' => 'stack',
-                    'channels' => ['daily', 'syslog'],
+                    'channels' => ['daily', 'syslog', 'simpleFile'],
                 ],
                 'daily' => [
                     'driver' => 'file',
-                    'path' => $this->logDir . '/app-{date}.log',
+                    'path' => $this->logDir . '/app.log',
+                    'daily' => true,
+                    'level' => 'info',
+                    'date_format' => 'Y-m-d',
+                ],
+                'simpleFile' => [
+                    'driver' => 'file',
+                    'path' => $this->logDir . '/app.log',
+                    'daily' => false,
                     'level' => 'info',
                     'date_format' => 'Y-m-d',
                 ],
@@ -50,10 +58,12 @@ class RealWorldScenarioTest extends TestCase
         $logger->info('This should log');
         $logger->error('This is an error');
 
-        $expectedPath = $this->logDir . '/app-' . date('Y-m-d') . '.log';
-        $this->assertFileExists($expectedPath);
+        $expectedPath1 = $this->logDir . '/app-' . date('Y-m-d') . '.log';
+        $expectedPath2 = $this->logDir . '/app.log';
+        $this->assertFileExists($expectedPath1);
+        $this->assertFileExists($expectedPath2);
 
-        $content = file_get_contents($expectedPath);
+        $content = file_get_contents($expectedPath1);
         $this->assertStringNotContainsString('This should not log', $content);
         $this->assertStringContainsString('This should log', $content);
         $this->assertStringContainsString('This is an error', $content);
