@@ -11,6 +11,9 @@ class ConsoleLogger extends AbstractLogger
     /** @var resource */
     private $outputStream;
 
+    /** @var resource */
+    private $errorStream;
+
     public function __construct(?string $env = null, array $config = [])
     {
         parent::__construct($env, $config);
@@ -26,6 +29,15 @@ class ConsoleLogger extends AbstractLogger
         } else {
             $stream = fopen('php://stdout', 'w');
             $this->outputStream = $stream !== false ? $stream : STDOUT;
+        }
+
+        // Set error stream (defaults to stderr, can be overridden for testing)
+        $errorValue = $config['error_output'] ?? null;
+        if (is_resource($errorValue)) {
+            $this->errorStream = $errorValue;
+        } else {
+            $stream = fopen('php://stderr', 'w');
+            $this->errorStream = $stream !== false ? $stream : STDERR;
         }
     }
 
@@ -113,9 +125,23 @@ class ConsoleLogger extends AbstractLogger
         $color = $this->colorize ? $this->getColor($level) : '';
         $reset = $this->colorize ? "\033[0m" : '';
 
-        if (is_resource($this->outputStream)) {
-            fwrite($this->outputStream, "{$color}{$formattedMessage}{$reset}" . PHP_EOL);
+        $line = "{$color}{$formattedMessage}{$reset}" . PHP_EOL;
+
+        // Route error-level and above to stderr (production best practice)
+        $stream = $this->isErrorLevel($level) ? $this->errorStream : $this->outputStream;
+
+        if (is_resource($stream)) {
+            fwrite($stream, $line);
         }
+    }
+
+    /**
+     * Check if level is error or above (should go to stderr).
+     */
+    private function isErrorLevel(string $level): bool
+    {
+        $normalized = $this->normalizeLogLevel($level);
+        return ($this->levelPriority[$normalized] ?? 0) >= ($this->levelPriority[LogLevel::ERROR] ?? 4);
     }
 
     private function getColor(string $level): string

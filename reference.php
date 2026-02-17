@@ -232,6 +232,56 @@ return [
             'format' => '[{timestamp}] [{env}] EMERGENCY: {message} {context}',
         ],
 
+        /*
+        |----------------------------------------------------------------------
+        | JSON Structured Logger (v1.2+)
+        |----------------------------------------------------------------------
+        |
+        | Outputs one JSON object per log line. Ideal for log aggregation
+        | systems like ELK, Datadog, CloudWatch, or Loki.
+        |
+        | Options:
+        |   - formatter: "json" for structured JSON output
+        |   - json_pretty_print: Pretty-print JSON (dev only, default: false)
+        |   - processors: Array of processor class names for context enrichment
+        |
+        */
+        'json' => [
+            'driver' => 'file',
+            'path' => 'logs/app.log',
+            'daily' => true,
+            'level' => $_ENV['LOG_LEVEL'] ?? 'info',
+            'formatter' => 'json',
+            'json_pretty_print' => false,
+            'processors' => [
+                \MonkeysLegion\Logger\Processor\UidProcessor::class,
+                \MonkeysLegion\Logger\Processor\MemoryUsageProcessor::class,
+                \MonkeysLegion\Logger\Processor\IntrospectionProcessor::class,
+            ],
+        ],
+
+        /*
+        |----------------------------------------------------------------------
+        | Buffer Logger (v1.2+)
+        |----------------------------------------------------------------------
+        |
+        | Buffers log records in memory and flushes to a wrapped handler.
+        | Ideal for long-running workers, queue consumers, and cron jobs.
+        |
+        | Options:
+        |   - driver: Must be "buffer"
+        |   - handler: Channel name of the underlying logger to flush to
+        |   - buffer_limit: Max buffered records before auto-flush (0 = unlimited)
+        |   - flush_on_overflow: Auto-flush when limit is reached (default: true)
+        |
+        */
+        'buffered' => [
+            'driver' => 'buffer',
+            'handler' => 'daily',       // Flushes to the 'daily' channel
+            'buffer_limit' => 100,       // Auto-flush every 100 records
+            'flush_on_overflow' => true,
+        ],
+
     ],
 
     /*
@@ -272,4 +322,20 @@ return [
     | without changing your code.
     |
     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Exception Logging (v1.2+)
+    |--------------------------------------------------------------------------
+    |
+    | Pass a Throwable in the 'exception' context key and it will be
+    | automatically normalized into a structured array:
+    |
+    |   $logger->error('Controller failed', ['exception' => $e]);
+    |
+    | Output includes: class, message, code, file:line, trace (15 frames),
+    | and nested 'previous' for chained exceptions.
+    |
+    */
 ];
+

@@ -3,13 +3,19 @@
 namespace MonkeysLegion\Logger\Factory;
 
 use InvalidArgumentException;
+use MonkeysLegion\Logger\Contracts\FormatterInterface;
 use MonkeysLegion\Logger\Contracts\MonkeysLoggerInterface;
+use MonkeysLegion\Logger\Contracts\ProcessorInterface;
+use MonkeysLegion\Logger\Formatter\JsonFormatter;
+use MonkeysLegion\Logger\Formatter\LineFormatter;
+use MonkeysLegion\Logger\Logger\BufferLogger;
 use MonkeysLegion\Logger\Logger\ConsoleLogger;
 use MonkeysLegion\Logger\Logger\FileLogger;
 use MonkeysLegion\Logger\Logger\NativeLogger;
 use MonkeysLegion\Logger\Logger\NullLogger;
 use MonkeysLegion\Logger\Logger\StackLogger;
 use MonkeysLegion\Logger\Logger\SyslogLogger;
+use MonkeysLegion\Logger\Abstracts\AbstractLogger;
 
 class LoggerFactory
 {
@@ -61,13 +67,14 @@ class LoggerFactory
             $driver = is_string($driver) ? $driver : 'null';
 
             $logger = match ($driver) {
-                'stack' => $this->createStackLogger($channelConfig),
-                'file' => $this->createFileLogger($channelConfig),
-                'console' => $this->createConsoleLogger($channelConfig),
-                'syslog' => $this->createSyslogLogger($channelConfig),
-                'errorlog' => $this->createNativeLogger($channelConfig),
-                'null' => $this->createNullLogger($channelConfig),
-                default => throw new InvalidArgumentException("Unsupported logger driver: {$driver}"),
+                'stack'    => $this->createStackLogger($channelConfig),
+                'file'     => $this->createFileLogger($channelConfig, $channel),
+                'console'  => $this->createConsoleLogger($channelConfig, $channel),
+                'syslog'   => $this->createSyslogLogger($channelConfig, $channel),
+                'errorlog' => $this->createNativeLogger($channelConfig, $channel),
+                'buffer'   => $this->createBufferLogger($channelConfig, $channel),
+                'null'     => $this->createNullLogger($channelConfig, $channel),
+                default    => throw new InvalidArgumentException("Unsupported logger driver: {$driver}"),
             };
 
             return $logger;
@@ -102,7 +109,7 @@ class LoggerFactory
     /**
      * @param array<string, mixed> $config
      */
-    private function createFileLogger(array $config): MonkeysLoggerInterface
+    private function createFileLogger(array $config, string $channelName = 'file'): MonkeysLoggerInterface
     {
         $pathValue = $config['path'] ?? 'logs/app.log';
         $path = is_string($pathValue) ? $pathValue : 'logs/app.log';
@@ -130,67 +137,168 @@ class LoggerFactory
             mkdir($directory, 0755, true);
         }
 
-        return new FileLogger($this->env, [
-            'path' => $path,
-            'level' => $this->getStringConfig($config, 'level', 'debug'),
-            'format' => $this->getStringConfig($config, 'format', '[{timestamp}] [{env}] {level}: {message} {context}'),
+        $logger = new FileLogger($this->env, [
+            'path'    => $path,
+            'level'   => $this->getStringConfig($config, 'level', 'debug'),
+            'format'  => $this->getStringConfig($config, 'format', '[{timestamp}] [{channel}.{env}] {level}: {message} {context}'),
+            'channel' => $channelName,
         ]);
+
+        return $this->applyFormatterAndProcessors($logger, $config);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    private function createConsoleLogger(array $config): MonkeysLoggerInterface
+    private function createConsoleLogger(array $config, string $channelName = 'console'): MonkeysLoggerInterface
     {
         $colorizeValue = $config['colorize'] ?? true;
 
-        return new ConsoleLogger($this->env, [
-            'level' => $this->getStringConfig($config, 'level', 'debug'),
-            'format' => $this->getStringConfig($config, 'format', '[{env}] {level}: {message} {context}'),
+        $logger = new ConsoleLogger($this->env, [
+            'level'    => $this->getStringConfig($config, 'level', 'debug'),
+            'format'   => $this->getStringConfig($config, 'format', '[{channel}.{env}] {level}: {message} {context}'),
             'colorize' => is_bool($colorizeValue) ? $colorizeValue : true,
+            'channel'  => $channelName,
         ]);
+
+        return $this->applyFormatterAndProcessors($logger, $config);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    private function createSyslogLogger(array $config): MonkeysLoggerInterface
+    private function createSyslogLogger(array $config, string $channelName = 'syslog'): MonkeysLoggerInterface
     {
         $identValue = $config['ident'] ?? 'php';
         $facilityValue = $config['facility'] ?? LOG_USER;
 
-        return new SyslogLogger($this->env, [
-            'level' => $this->getStringConfig($config, 'level', 'debug'),
-            'format' => $this->getStringConfig($config, 'format', '[{env}] {level}: {message} {context}'),
-            'ident' => is_string($identValue) ? $identValue : 'php',
+        $logger = new SyslogLogger($this->env, [
+            'level'    => $this->getStringConfig($config, 'level', 'debug'),
+            'format'   => $this->getStringConfig($config, 'format', '[{channel}.{env}] {level}: {message} {context}'),
+            'ident'    => is_string($identValue) ? $identValue : 'php',
             'facility' => is_int($facilityValue) ? $facilityValue : LOG_USER,
+            'channel'  => $channelName,
         ]);
+
+        return $this->applyFormatterAndProcessors($logger, $config);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    private function createNativeLogger(array $config): MonkeysLoggerInterface
+    private function createNativeLogger(array $config, string $channelName = 'errorlog'): MonkeysLoggerInterface
     {
         $messageTypeValue = $config['message_type'] ?? 0;
         $destinationValue = $config['destination'] ?? null;
 
-        return new NativeLogger($this->env, [
-            'level' => $this->getStringConfig($config, 'level', 'debug'),
-            'format' => $this->getStringConfig($config, 'format', '[{env}] {level}: {message} {context}'),
+        $logger = new NativeLogger($this->env, [
+            'level'        => $this->getStringConfig($config, 'level', 'debug'),
+            'format'       => $this->getStringConfig($config, 'format', '[{channel}.{env}] {level}: {message} {context}'),
             'message_type' => is_int($messageTypeValue) ? $messageTypeValue : 0,
-            'destination' => is_string($destinationValue) ? $destinationValue : null,
+            'destination'  => is_string($destinationValue) ? $destinationValue : null,
+            'channel'      => $channelName,
         ]);
+
+        return $this->applyFormatterAndProcessors($logger, $config);
     }
 
     /**
      * @param array<string, mixed> $config
      */
-    private function createNullLogger(array $config): MonkeysLoggerInterface
+    private function createBufferLogger(array $config, string $channelName = 'buffer'): MonkeysLoggerInterface
+    {
+        $handlerChannel = $this->getStringConfig($config, 'handler', 'file');
+
+        $handler = $this->make($handlerChannel);
+
+        $limitValue = $config['buffer_limit'] ?? 0;
+        $bufferLimit = is_int($limitValue) ? $limitValue : 0;
+
+        $flushValue = $config['flush_on_overflow'] ?? true;
+        $flushOnOverflow = is_bool($flushValue) ? $flushValue : true;
+
+        return new BufferLogger($handler, $bufferLimit, $flushOnOverflow);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function createNullLogger(array $config, string $channelName = 'null'): MonkeysLoggerInterface
     {
         return new NullLogger($this->env, [
-            'level' => $this->getStringConfig($config, 'level', 'debug'),
+            'level'   => $this->getStringConfig($config, 'level', 'debug'),
+            'channel' => $channelName,
         ]);
+    }
+
+    /**
+     * Apply formatter and processors from channel configuration to a logger.
+     *
+     * @param array<string, mixed> $config
+     */
+    private function applyFormatterAndProcessors(AbstractLogger $logger, array $config): AbstractLogger
+    {
+        // Apply formatter
+        $formatterType = $this->getStringConfig($config, 'formatter', '');
+        if ($formatterType !== '') {
+            $formatter = $this->createFormatter($formatterType, $config);
+            if ($formatter !== null) {
+                $logger->setFormatter($formatter);
+            }
+        }
+
+        // Apply processors
+        $processorsValue = $config['processors'] ?? [];
+        if (is_array($processorsValue)) {
+            foreach ($processorsValue as $processorConfig) {
+                $processor = $this->createProcessor($processorConfig);
+                if ($processor !== null) {
+                    $logger->addProcessor($processor);
+                }
+            }
+        }
+
+        return $logger;
+    }
+
+    /**
+     * Create a formatter from a type string.
+     *
+     * @param array<string, mixed> $config
+     */
+    private function createFormatter(string $type, array $config): ?FormatterInterface
+    {
+        return match ($type) {
+            'json' => new JsonFormatter(
+                prettyPrint: ($config['json_pretty_print'] ?? false) === true,
+            ),
+            'line' => new LineFormatter(
+                format: $this->getStringConfig($config, 'format', '[{timestamp}] [{channel}.{env}] {level}: {message} {context}'),
+            ),
+            default => null,
+        };
+    }
+
+    /**
+     * Create a processor from configuration (string class name or array with 'class' key).
+     */
+    private function createProcessor(mixed $processorConfig): ?ProcessorInterface
+    {
+        $className = null;
+
+        if (is_string($processorConfig)) {
+            $className = $processorConfig;
+        } elseif (is_array($processorConfig) && isset($processorConfig['class']) && is_string($processorConfig['class'])) {
+            $className = $processorConfig['class'];
+        }
+
+        if ($className === null || !class_exists($className)) {
+            return null;
+        }
+
+        $instance = new $className();
+
+        return $instance instanceof ProcessorInterface ? $instance : null;
     }
 
     /**

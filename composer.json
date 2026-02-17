@@ -25,6 +25,10 @@
         {
             "name": "Amanar Marouane",
             "email": "marouane.amanar07@gmail.com"
+        },
+        {
+            "name": "Jorge Peraza",
+            "email": "jorge@monkeys.cloud"
         }
     ],
     "minimum-stability": "dev",
