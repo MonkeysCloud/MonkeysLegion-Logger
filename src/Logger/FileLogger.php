@@ -107,6 +107,18 @@ class FileLogger extends AbstractLogger
         $context = $this->enrichContext($context);
         $logLine = $this->formatMessage($level, $message, $context) . PHP_EOL;
 
-        file_put_contents($this->logPath, $logLine, FILE_APPEND | LOCK_EX);
+        try {
+            $result = file_put_contents($this->logPath, $logLine, FILE_APPEND | LOCK_EX);
+
+            if ($result === false) {
+                // Fallback to error_log if file write fails
+                error_log("[MonkeysLegion\\Logger] Failed to write to {$this->logPath}: " . $logLine);
+            }
+        } catch (\Throwable $e) {
+            // Never let a logging failure crash the application.
+            // This is critical for production — a full disk or permission issue
+            // should not bring down the service.
+            error_log("[MonkeysLegion\\Logger] Write exception ({$this->logPath}): {$e->getMessage()} — Original log: " . trim($logLine));
+        }
     }
 }

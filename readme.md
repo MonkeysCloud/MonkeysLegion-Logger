@@ -2,7 +2,7 @@
 
 A flexible, PSR-3 compliant PHP logging library with environment-aware logging, multiple drivers, and extensive configuration options.
 
-[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.1-blue.svg)](https://php.net)
+[![PHP Version](https://img.shields.io/badge/php-%3E%3D8.4-blue.svg)](https://php.net)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -552,6 +552,38 @@ Contributions are welcome! Please submit pull requests or open issues on GitHub.
 For issues, questions, or suggestions, please open an issue on GitHub.
 
 ## Changelog
+
+### Version 1.2.0
+
+**Formatters**
+- `LineFormatter` — PSR-3 `{placeholder}` message interpolation, microsecond-precision ISO-8601 timestamps, `{channel}` and `{extra}` tokens
+- `JsonFormatter` — Structured JSON output (one object per line) for log aggregation (ELK, Datadog, CloudWatch, Loki)
+- `FormatterInterface` — Pluggable formatter contract for custom formatters
+
+**Processors**
+- `IntrospectionProcessor` — Adds call-site `file`, `line`, `class`, `function` to log records
+- `MemoryUsageProcessor` — Adds `memory_usage` and `memory_peak` to log records
+- `UidProcessor` — Generates per-request unique ID for log correlation, with `reset()` for workers
+
+**Exception Handling**
+- Automatic `Throwable` normalization in context: `['exception' => $e]` → structured array with `class`, `message`, `code`, `file:line`, `trace` (15 frames), and nested `previous`
+- `FileLogger` graceful write-failure handling with `error_log()` fallback — logging failures never crash the app
+
+**New Drivers**
+- `BufferLogger` — Defers writes to a wrapped logger, with `flush()`, auto-flush on threshold, and immediate flush for `emergency()` — ideal for workers and queue consumers
+
+**Console Logger**
+- Routes `error`, `critical`, `alert`, `emergency` to `stderr` (production best practice)
+
+**Channel Support**
+- Each logger now carries a `channel` name (visible in log output via `{channel}` token)
+- `LoggerFactory` auto-wires channel names from config key
+
+**Configuration**
+- `'formatter'` key: `'line'` or `'json'` per channel
+- `'processors'` key: array of processor class names per channel
+- `'channel'` key: override channel name per logger
+- `'buffer'` driver with `handler`, `buffer_limit`, `flush_on_overflow` options
 
 ### Version 1.0.0
 - Initial release
