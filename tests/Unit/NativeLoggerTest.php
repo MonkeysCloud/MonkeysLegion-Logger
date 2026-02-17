@@ -128,25 +128,22 @@ class NativeLoggerTest extends TestCase
 
     public function testDefaultMessageType(): void
     {
+        $this->expectNotToPerformAssertions();
+
         // Without message_type, NativeLogger defaults to type 0 (PHP error log).
-        // We can't easily verify where it goes, but we can verify it doesn't crash.
         $logger = new NativeLogger('dev', []);
-
         $logger->info('Default message type test');
-
-        // If we get here without exception, the test passes
-        $this->assertTrue(true);
     }
 
     public function testInvalidMessageTypeDefaultsToZero(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $logger = new NativeLogger('dev', [
             'message_type' => 'invalid',
         ]);
 
         // Should not crash — falls back to type 0
         $logger->info('Invalid type fallback');
-
-        $this->assertTrue(true);
     }
 }

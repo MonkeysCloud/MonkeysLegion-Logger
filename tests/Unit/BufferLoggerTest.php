@@ -2,7 +2,6 @@
 
 namespace MonkeysLegion\Logger\Tests\Unit;
 
-use MonkeysLegion\Logger\Contracts\MonkeysLoggerInterface;
 use MonkeysLegion\Logger\Logger\BufferLogger;
 use MonkeysLegion\Logger\Logger\FileLogger;
 use PHPUnit\Framework\TestCase;

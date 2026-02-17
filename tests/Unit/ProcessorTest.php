@@ -31,8 +31,8 @@ class ProcessorTest extends TestCase
 
         // The file should be a .php file, not 'unknown'
         $this->assertStringEndsWith('.php', $result['extra']['file']);
-        // Should NOT reference internal MonkeysLegion\Logger classes
-        $this->assertStringNotContainsString('MonkeysLegion/Logger/Logger/', $result['extra']['file']);
+        // Should NOT reference internal MonkeysLegion\Logger classes by namespace
+        $this->assertStringNotContainsString('MonkeysLegion\\Logger\\', $result['extra']['class']);
     }
 
     public function testMemoryUsageProcessorAddsMemoryInfo(): void

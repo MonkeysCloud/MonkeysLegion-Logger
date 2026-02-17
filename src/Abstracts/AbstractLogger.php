@@ -172,12 +172,17 @@ abstract class AbstractLogger implements MonkeysLoggerInterface
         /** @var array<string, mixed> $recordExtra */
         $recordExtra = is_array($record['extra'] ?? null) ? $record['extra'] : [];
 
+        // Allow processors to adjust level, message, and channel
+        $recordLevel   = isset($record['level']) && is_string($record['level']) ? $record['level'] : $level;
+        $recordMessage = isset($record['message']) ? (string) $record['message'] : (string) $message;
+        $recordChannel = isset($record['channel']) && is_string($record['channel']) ? $record['channel'] : $this->channel;
+
         return $this->getFormatter()->format(
-            $level,
-            $message,
+            $recordLevel,
+            $recordMessage,
             $recordContext,
             $recordExtra,
-            $this->channel,
+            $recordChannel,
             $this->env,
         );
     }

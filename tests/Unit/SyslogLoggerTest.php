@@ -26,6 +26,8 @@ class SyslogLoggerTest extends TestCase
 
     public function testAllLogLevelsExecute(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $logger = new SyslogLogger('dev', [
             'ident' => 'monkeys-test',
         ]);
@@ -38,28 +40,23 @@ class SyslogLoggerTest extends TestCase
         $logger->notice('Notice');
         $logger->info('Info');
         $logger->debug('Debug');
-
-        // No exceptions thrown = success
-        $this->assertTrue(true);
     }
 
     public function testSmartLogByEnvironment(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $logger = new SyslogLogger('production', [
             'ident' => 'monkeys-test',
         ]);
 
         $logger->smartLog('Smart log from production');
-
-        $this->assertTrue(true);
     }
 
     public function testLevelFilteringPreventsLowPriorityLogs(): void
     {
-        // Use level 'error' so debug/info/warning/notice are suppressed.
-        // We can't capture syslog output easily but we can verify
-        // shouldLog() is respected by the fact that the method completes
-        // without any write.
+        $this->expectNotToPerformAssertions();
+
         $logger = new SyslogLogger('dev', [
             'ident' => 'monkeys-test',
             'level' => 'error',
@@ -72,24 +69,24 @@ class SyslogLoggerTest extends TestCase
 
         // This should pass through
         $logger->error('Allowed error');
-
-        $this->assertTrue(true);
     }
 
     public function testLogMethodAcceptsArbitraryLevel(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $logger = new SyslogLogger('dev', [
             'ident' => 'monkeys-test',
         ]);
 
         $logger->log('warning', 'Generic log call');
         $logger->log('info', 'Another generic call');
-
-        $this->assertTrue(true);
     }
 
     public function testContextPassedToFormatter(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $logger = new SyslogLogger('dev', [
             'ident' => 'monkeys-test',
         ]);
@@ -99,8 +96,6 @@ class SyslogLoggerTest extends TestCase
             'user_id' => 42,
             'data' => ['nested' => true],
         ]);
-
-        $this->assertTrue(true);
     }
 
     public function testDefaultIdentAndFacility(): void

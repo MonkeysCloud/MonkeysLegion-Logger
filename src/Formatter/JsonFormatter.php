@@ -51,6 +51,21 @@ class JsonFormatter implements FormatterInterface
 
         $json = json_encode($record, $flags);
 
-        return is_string($json) ? $json : '{"error":"json_encode failed"}';
+        if (is_string($json)) {
+            return $json;
+        }
+
+        // Preserve core fields when json_encode fails (e.g. resource or invalid UTF-8 in context)
+        $fallback = [
+            'timestamp' => $record['timestamp'],
+            'level'     => $record['level'],
+            'channel'   => $record['channel'],
+            'env'       => $record['env'],
+            'message'   => $record['message'],
+            'error'     => 'json_encode failed: ' . json_last_error_msg(),
+        ];
+
+        $fallbackJson = json_encode($fallback, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return is_string($fallbackJson) ? $fallbackJson : '{"error":"json_encode failed"}';
     }
 }

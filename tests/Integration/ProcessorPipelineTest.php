@@ -6,7 +6,6 @@ use MonkeysLegion\Logger\Factory\LoggerFactory;
 use MonkeysLegion\Logger\Formatter\JsonFormatter;
 use MonkeysLegion\Logger\Logger\BufferLogger;
 use MonkeysLegion\Logger\Logger\FileLogger;
-use MonkeysLegion\Logger\Processor\IntrospectionProcessor;
 use MonkeysLegion\Logger\Processor\MemoryUsageProcessor;
 use MonkeysLegion\Logger\Processor\UidProcessor;
 use PHPUnit\Framework\TestCase;
@@ -221,7 +220,6 @@ class ProcessorPipelineTest extends TestCase
 
     public function testProductionStackWithProcessors(): void
     {
-        $logPath2 = sys_get_temp_dir() . '/pipeline_stack_' . uniqid() . '.log';
 
         $config = [
             'default' => 'production',
